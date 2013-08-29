@@ -35,10 +35,9 @@ var ctx = c.getContext('2d');
 var planet = new Circle(ctx, new V(100, 100));
 var sun = new Circle(ctx, new V(500, 500));
 
-// Masses and distances
+// Masses
 var Mp = 10;
 var Ms = 100;
-var d = planet.pos().dist(sun.pos());
 
 // Forces
 var Vp = new V(-10, 10);
@@ -50,6 +49,7 @@ var main = function(dt, frame, time) {
     planet.draw();
     sun.draw();
 
+    var d = planet.pos().dist(sun.pos());
     var direction = planet.pos().sub(sun.pos()).mul(-1);
     var gravity = direction.mul(Mp * Ms / Math.pow(d, 2));
 
