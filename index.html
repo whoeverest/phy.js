@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title></title>
+    <style type="text/css">
+        canvas {
+            border: 1px solid black;    
+        }
+    </style>
+    <script src="http://code.jquery.com/jquery-1.10.2.min.js"></script>
+
+    <script type="text/javascript">
+        var Circle = function(ctx, vector) {
+            if (!ctx || typeof ctx !== 'object') {
+                throw new Error('Context is not defined');
+            }
+            this.ctx = ctx;
+            this.vector = vector;
+        };
+
+        Circle.prototype.draw = function() {
+            radius = 10;
+            this.ctx.fillStyle = '#ff0000';
+            this.ctx.beginPath();
+            this.ctx.arc(this.vector.x, this.vector.y, radius, 0, 2 * Math.PI);
+            this.ctx.stroke();
+            return this;
+        }
+
+        Circle.prototype.pos = function(vector) {
+            if (vector) {
+                this.vector = vector;
+                return this;
+            } else {
+                return this.vector;
+            }
+        }
+
+        Circle.prototype.move = function(vector) {
+            this.vector = this.vector.add(vector);
+            return this;
+        }
+    </script>
+
+    <script type="text/javascript">
+        var Line = function(ctx, start, end) {
+            this.ctx = ctx;
+            this.start = start;
+            this.end = end;
+        };
+
+        Line.prototype.draw = function() {
+            this.ctx.beginPath();
+            this.ctx.moveTo(this.start.x, this.start.y);
+            this.ctx.lineTo(this.end.x, this.end.y);
+            this.ctx.stroke();
+            return this;
+        }
+
+        Line.prototype.from = function(start) {
+            this.start = start;
+            return this;
+        }
+
+        Line.prototype.to = function(end) {
+            this.end = end;
+            return this;
+        }
+    </script>
+
+    <script type="text/javascript">
+        var Vector = function(x, y) {
+            this.x = x;
+            this.y = y;
+        };
+
+        Vector.prototype.set = function(vector) {
+            this.x = vector.x;
+            this.y = vector.y;
+        }
+
+        Vector.prototype.add = function(vector) {
+            return new Vector(this.x + vector.x, this.y + vector.y);
+        }
+
+        Vector.prototype.sub = function(vector) {
+            return new Vector(this.x - vector.x, this.y - vector.y);
+        }
+
+        Vector.prototype.mul = function(scalar) {
+            return new Vector(this.x * scalar, this.y * scalar)
+        }
+
+        Vector.prototype.mag = function() {
+            return Math.sqrt( Math.pow(this.x, 2) + Math.pow(this.y, 2) );
+        }
+
+        Vector.prototype.unit = function() {
+            return new Vector(this.x / this.mag(), this.y / this.mag());
+        }
+
+        Vector.prototype.rot = function(angle) {
+            angle = (angle * Math.PI) / 180; // Convert to radians
+            var newX = (this.x * Math.cos(angle)) - (this.y * Math.sin(angle));
+            var newY = (this.x * Math.sin(angle)) + (this.y * Math.cos(angle));
+            return new Vector(newX, newY)
+        }
+
+        var V = Vector;
+    </script>
+
+    <script type="text/javascript">
+        var clearCanvas = function(canvas, ctx) {
+            ctx.save();
+            ctx.setTransform(1, 0, 0, 1, 0, 0);
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.restore();
+            return this;           
+        }
+    </script>
+
+    <script type="text/javascript">
+        var eventLoop = function(f, dt, frame, fps, time, lastTime) {
+            // Set defaults
+            fps = fps || 60;
+            frame = frame || 0;
+            time = time || new Date().getTime();
+            lastTime = lastTime || time;
+
+            dt = time - lastTime;
+            lastTime = time;
+
+            f.call(this, dt, frame);
+            setTimeout(eventLoop.bind(this, f, dt, frame + 1,
+                fps, time + (1000 / fps)), 1000 / fps, lastTime); // Less needed stuff.
+        }
+    </script>
+
+    <script type="text/javascript">
+        $(function() {
+            // Init the canvas
+            var c = document.getElementById('c');
+            var ctx = c.getContext('2d');
+
+            // Objects
+            var nail = new V(300, 100);
+            var ball = new Circle(ctx, new V(400, 300));
+            var rope = new Line(ctx, nail, ball.pos());
+            
+            // Forces
+            var g = new V(0, 0.945);
+            var t = nail.add(ball.pos()).unit();
+
+            // Magnitude
+            var v = new V(0, 0);
+
+            // Main function
+            var run = function(dt, frame, time) {
+                clearCanvas(c, ctx);
+                
+                ball.draw();
+                rope.to(ball.pos()).draw();
+
+                v = v.add(g).add(t);
+                ball.move(v);
+
+                t = ball.pos().sub(nail).unit().mul(-1);
+                // v = v.add(g).add(t);
+                // console.log(v);
+            }
+
+            eventLoop(run);
+        })
+    </script>
+</head>
+<body>
+    <canvas id="c" width="800" height="600"></canvas>
+</body>
+</html>
