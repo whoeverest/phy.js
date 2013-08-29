@@ -12,7 +12,7 @@ Make the ball go around in a circle:
 var canvas = getElementById('canvas');
 var ctx = canvas.getContext('2d');
 
-var ball = new Circle(ctx, new V(100, 100));  // <x,y> = <100,10>
+var ball = new Circle(ctx, new V(100, 100));  // <x,y> = <100,100>
 var v = new Vector(2, 0);  // Force: 2 units to the right.
 
 var main = function(dt, frame, time) {
