@@ -92,7 +92,7 @@
         }
 
         Vector.prototype.mag = function() {
-            return Math.sqrt( Math.pow(this.x, 2) + Math.pow(this.y, 2) );
+            return Math.sqrt(Math.pow(this.x, 2) + Math.pow(this.y, 2));
         }
 
         Vector.prototype.unit = function() {
@@ -104,6 +104,10 @@
             var newX = (this.x * Math.cos(angle)) - (this.y * Math.sin(angle));
             var newY = (this.x * Math.sin(angle)) + (this.y * Math.cos(angle));
             return new Vector(newX, newY)
+        }
+
+        Vector.prototype.dist = function(vector) {
+            return Math.sqrt(Math.pow(this.x - vector.x, 2) + Math.pow(this.y - vector.y, 2));
         }
 
         var V = Vector;
@@ -122,7 +126,7 @@
     <script type="text/javascript">
         var eventLoop = function(f, dt, frame, fps, time, lastTime) {
             // Set defaults
-            fps = fps || 60;
+            fps = fps || 30;
             frame = frame || 0;
             time = time || new Date().getTime();
             lastTime = lastTime || time;
@@ -138,35 +142,34 @@
 
     <script type="text/javascript">
         $(function() {
-            // Init the canvas
+            // Init
             var c = document.getElementById('c');
             var ctx = c.getContext('2d');
 
             // Objects
-            var nail = new V(300, 100);
-            var ball = new Circle(ctx, new V(400, 300));
-            var rope = new Line(ctx, nail, ball.pos());
-            
-            // Forces
-            var g = new V(0, 0.945);
-            var t = nail.add(ball.pos()).unit();
+            var planet = new Circle(ctx, new V(100, 100));
+            var sun = new Circle(ctx, new V(500, 500));
 
-            // Magnitude
-            var v = new V(0, 0);
+            // Masses and distances
+            var Mp = 10;
+            var Ms = 100;
+            var d = planet.pos().dist(sun.pos());
+
+            // Forces
+            var Vp = new V(-10, 10);
 
             // Main function
             var run = function(dt, frame, time) {
-                clearCanvas(c, ctx);
+                // clearCanvas(c, ctx);
                 
-                ball.draw();
-                rope.to(ball.pos()).draw();
+                planet.draw();
+                sun.draw();
 
-                v = v.add(g).add(t);
-                ball.move(v);
+                var direction = planet.pos().sub(sun.pos()).mul(-1);
+                var gravity = direction.mul(Mp * Ms / Math.pow(d, 2));
 
-                t = ball.pos().sub(nail).unit().mul(-1);
-                // v = v.add(g).add(t);
-                // console.log(v);
+                Vp = Vp.add(gravity);
+                planet.move(Vp);
             }
 
             eventLoop(run);
