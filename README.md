@@ -59,3 +59,5 @@ var main = function(dt, frame, time) {
 
 eventLoop(main);
 ```
+
+You can check out the "Gravity" demo here: [Phy.js Gravity demo](http://whoeverest.github.io/phy.js/index.html)
